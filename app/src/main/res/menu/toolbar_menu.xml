@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/pointConnect" android:title="连线" app:showAsAction="always"/>
+    <item android:id="@+id/pointInfo" android:title="点位" app:showAsAction="always"/>
+    <item android:id="@+id/choosePoint" android:title="选点" app:showAsAction="always"/>
+</menu>

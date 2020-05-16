@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:divider="@drawable/divider"
+    android:showDividers="middle"
+    android:background="@drawable/shape_corner">
+
+    <TextView
+        android:id="@+id/textView_infoChange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="修改"
+        android:textSize="14sp"
+        android:textColor="#000"
+        android:clickable="true"/>
+    <TextView
+        android:id="@+id/textView_navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="导航"
+        android:textSize="14sp"
+        android:textColor="#000"
+        android:clickable="true"/>
+    <TextView
+        android:id="@+id/textView_deleteInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="删除"
+        android:textSize="14sp"
+        android:textColor="#000"
+        android:clickable="true"/>
+    <TextView
+        android:id="@+id/textView_closeWindow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="关闭"
+        android:textSize="14sp"
+        android:textColor="#000"
+        android:clickable="true"/>
+</LinearLayout>
