@@ -16,7 +16,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
@@ -64,8 +67,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import jxl.write.WriteException;
 
@@ -414,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"没有填写任何信息，无法导出excel文件",Toast.LENGTH_SHORT).show();
             return;
         }
-        ExcelUtils excelUtils=new ExcelUtils(excelFilePath);
+        ExcelUtils excelUtils=new ExcelUtils(getContentResolver(),excelFilePath);
         for(int i=0;i<pointInfoList.size();++i){
             JsonObject jsonObject=new JsonParser().parse(pointInfoList.get(i)).getAsJsonObject();
             String sheetName="";
@@ -424,7 +431,32 @@ public class MainActivity extends AppCompatActivity {
                 sheetName=jsonObject.get("pointName").getAsString();
             }
             excelUtils.addSheet(sheetName,i);
-            excelUtils.addText(i,0,0,"jfofhefehf");
+
+            excelUtils.addText(i,0,0,0,0,"点号");
+            excelUtils.addText(i,1,0,2,0,jsonObject.get("pointName").getAsString());
+            excelUtils.addText(i,5,0,0,0,"级别");
+            excelUtils.addText(i,6,0,2,0,jsonObject.get("pointLevel").getAsString());
+
+            excelUtils.addText(i,0,1,0,0,"地类土质");
+            excelUtils.addText(i,1,1,2,0,jsonObject.get("pointSoil").getAsString());
+            excelUtils.addText(i,5,1,0,0,"标石类型");
+            excelUtils.addText(i,6,1,2,0,jsonObject.get("markerType").getAsString());
+
+            excelUtils.addText(i,0,2,0,0,"选点人");
+            excelUtils.addText(i,1,2,2,0,jsonObject.get("selectionPerson").getAsString());
+            excelUtils.addText(i,5,2,0,0,"选点日期");
+            excelUtils.addText(i,6,2,2,0,jsonObject.get("selectionDate").getAsString());
+
+            excelUtils.addText(i,0,3,0,0,"埋石单位");
+            excelUtils.addText(i,1,3,2,0,jsonObject.get("buriedUnit").getAsString());
+            excelUtils.addText(i,5,3,0,0,"埋石日期");
+            excelUtils.addText(i,6,3,2,0,jsonObject.get("buriedDate").getAsString());
+
+            excelUtils.addText(i,0,4,0,0,"所在位置");
+            excelUtils.addText(i,1,4,2,0,jsonObject.get("pointPosition").getAsString());
+
+            excelUtils.addText(i,0,5,0,5,"实地图片");
+            excelUtils.addImage(i,1,5,5,5, jsonObject.get("imageUri").getAsString());
         }
         excelUtils.close();
         Toast.makeText(getApplicationContext(),"成功导出excel文件",Toast.LENGTH_SHORT).show();

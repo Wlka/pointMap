@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import android.annotation.TargetApi;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,11 +20,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -32,7 +38,9 @@ import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -117,6 +125,38 @@ public class InfochangeActivity extends AppCompatActivity {
                 return;
             }
         }
+        textView_selectionDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder dialog=new AlertDialog.Builder(InfochangeActivity.this,R.style.Theme_AppCompat_Light_Dialog);
+                final DatePicker datePicker=new DatePicker(getApplicationContext());
+                dialog.setMessage("设置选点日期").setView(datePicker);
+                dialog.setNegativeButton("取消",null);
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        textView_selectionDate.setText(datePicker.getYear()+"-"+datePicker.getMonth()+"-"+datePicker.getDayOfMonth());
+                    }
+                });
+                dialog.show();
+            }
+        });
+        textView_buriedDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder dialog=new AlertDialog.Builder(InfochangeActivity.this,R.style.Theme_AppCompat_Light_Dialog);
+                final DatePicker datePicker=new DatePicker(getApplicationContext());
+                dialog.setMessage("设置埋石日期").setView(datePicker);
+                dialog.setNegativeButton("取消",null);
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        textView_buriedDate.setText(datePicker.getYear()+"-"+datePicker.getMonth()+"-"+datePicker.getDayOfMonth());
+                    }
+                });
+                dialog.show();
+            }
+        });
         photoViewer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -154,6 +194,10 @@ public class InfochangeActivity extends AppCompatActivity {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(TextUtils.isEmpty(textView_pointName.getText())){
+                    Toast.makeText(getApplicationContext(),"点名不能为空",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 jsonObject.addProperty("projectName",textView_projectName.getText().toString());
                 jsonObject.addProperty("pointName",textView_pointName.getText().toString());
                 jsonObject.addProperty("pointLevel",textView_pointLevel.getText().toString());
@@ -179,7 +223,7 @@ public class InfochangeActivity extends AppCompatActivity {
     }
 
     private void takePhoto(){
-        String imageName = "IMG_" + new SimpleDateFormat("yyyy_MM_dd_HHmmss", Locale.getDefault()).format(new Date()) +".jpg";
+        String imageName = "IMG_" + new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.getDefault()).format(new Date()) +".jpg";
         File outputImage = new File(imageStorageDir, imageName);
         try {
             if (outputImage.exists()) {
@@ -275,7 +319,6 @@ public class InfochangeActivity extends AppCompatActivity {
             cursor.close();
         }
         imageUri=Uri.parse(path);
-//        Toast.makeText(getApplicationContext(),imageUri.toString(),Toast.LENGTH_SHORT).show();
         return path;
     }
 
