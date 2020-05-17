@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
@@ -63,13 +64,18 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.simple.spiderman.SpiderMan;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -103,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean isConnect=false;
     String fileName="untitled";
     String excelFilePath="";
+    public static final int INFOCHANGE=1;
+    public static final int CHOOSE_OPENFILE=2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         }else{
                             intent.putExtra("coord_Data",marker.getPosition().toString());
                         }
-                        startActivityForResult(intent,1);
+                        startActivityForResult(intent,INFOCHANGE);
                     }
                 });
                 textView_deleteInfo.setOnClickListener(new View.OnClickListener() {
@@ -362,6 +370,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void openFile(){
         //TODO 打开文件列表让用户选择打开指定文件
+        File documentStorageDir = new File(Environment.getExternalStoragePublicDirectory("").getAbsoluteFile() + "/PointMap",
+                "Documents");
+        if (!documentStorageDir.exists()) {
+            try {
+                documentStorageDir.mkdirs();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(),"Documents文件夹创建失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        List<String>pmFileList=new ArrayList<>();
+        for(File pmFile:documentStorageDir.listFiles()){
+            if(pmFile.getAbsolutePath().endsWith(".pm")) {
+                pmFileList.add(pmFile.getName());
+            }
+        }
+        Intent intent=new Intent(getApplicationContext(),FileOpenActivity.class);
+        intent.putExtra("pmFiles",documentStorageDir.getAbsolutePath()+":"+pmFileList.toString());
+        startActivityForResult(intent,CHOOSE_OPENFILE);
     }
 
     public void exportFile(){
@@ -501,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
                 if(overLayCount>0) {
                     Intent intent = new Intent(this, PointinfoActivity.class);
                     intent.putExtra("point_Data", pointInfoList.toString());
-                    startActivityForResult(intent, 1);
+                    startActivityForResult(intent, INFOCHANGE);
                 }else{
                     Toast.makeText(getApplicationContext(),"目前没有标记任何地点",Toast.LENGTH_SHORT).show();
                 }
@@ -582,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requsetCode,int resultCode,Intent data) {
         super.onActivityResult(requsetCode, resultCode, data);
         switch (requsetCode) {
-            case 1:
+            case INFOCHANGE:
                 if (resultCode == RESULT_OK) {
                     String data_return=data.getStringExtra("data_return");
                     for(int i=0;i<pointInfoList.size();++i){
@@ -594,6 +621,32 @@ public class MainActivity extends AppCompatActivity {
                     pointInfoList.add(data_return);
                     Toast.makeText(getApplicationContext(),
                             new JsonParser().parse(data_return).getAsJsonObject().get("pointName").getAsString()+"修改成功",Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case CHOOSE_OPENFILE:
+                if(resultCode==RESULT_OK){
+                    String data_return=data.getStringExtra("data_return");
+                    File pmFile=new File(data_return);
+                    try {
+                        InputStream inputStream = new FileInputStream(pmFile);
+                        if(inputStream!=null){
+                            InputStreamReader inputStreamReader=new InputStreamReader(inputStream,"UTF-8");
+                            BufferedReader bufferedReader=new BufferedReader(inputStreamReader);
+                            String line="";
+                            String content="";
+                            while((line=bufferedReader.readLine())!=null){
+                                content+=line;
+                            }
+                            inputStream.close();
+                            //TODO 解析pm数据文件，包括点之记信息和点位连接
+                            content.replace("[","").replace("]","");
+                            pointInfoList.clear();
+                            pointInfoList= Arrays.asList(content.split("}"));
+                            Toast.makeText(getApplicationContext(),content,Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        SpiderMan.show(e);
+                    }
                 }
                 break;
             default:
