@@ -60,6 +60,7 @@ import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.simple.spiderman.SpiderMan;
@@ -104,8 +105,9 @@ public class MainActivity extends AppCompatActivity {
     private BaiduMap.OnMarkerClickListener pointMenuMarkerClickListener;    //Marker信息窗口点击监听事件
     private BaiduMap.OnMarkerClickListener pointConnectClickListener;    //Marker连接点击监听事件
     private List<String> pointInfoList=new ArrayList<>();
-    private int overLayCount=0; //overlay数量
     private LatLng lastPoint=new LatLng(0.0,0.0);
+    private int overLayCount=0; //overlay数量
+    private List<List<LatLng>> connectPointsList=new ArrayList<>();
     private boolean isConnect=false;
     String fileName="untitled";
     String excelFilePath="";
@@ -493,7 +495,18 @@ public class MainActivity extends AppCompatActivity {
         FileOutputStream fileOutputStream= null;
         try {
             fileOutputStream = new FileOutputStream(fileName);
-            fileOutputStream.write(pointInfoList.toString().getBytes());
+            JsonObject jsonObject=new JsonObject();
+            jsonObject.addProperty("pointList",pointInfoList.toString());
+            String connectInfo="";
+            for(int i=0;i<connectPointsList.size();++i){
+                connectInfo+=connectPointsList.get(i).toString().replace("latitude","")
+                        .replace("longitude","")
+                        .replace(":","")
+                        .replace("[","").replace("]","")
+                        .replace(" ","")+";";
+            }
+            jsonObject.addProperty("connectPointsList",connectInfo);
+            fileOutputStream.write(jsonObject.toString().getBytes());
             fileOutputStream.flush();
             fileOutputStream.close();
             Toast.makeText(getApplicationContext(),"文件保存成功",Toast.LENGTH_SHORT).show();
@@ -599,6 +612,7 @@ public class MainActivity extends AppCompatActivity {
         baiduMap.setOnPolylineClickListener(new BaiduMap.OnPolylineClickListener() {
             @Override
             public boolean onPolylineClick(Polyline polyline) {
+                connectPointsList.remove(polyline.getPoints());
                 polyline.remove();
                 return true;
             }
@@ -629,6 +643,7 @@ public class MainActivity extends AppCompatActivity {
                     File pmFile=new File(data_return);
                     try {
                         InputStream inputStream = new FileInputStream(pmFile);
+
                         if(inputStream!=null){
                             InputStreamReader inputStreamReader=new InputStreamReader(inputStream,"UTF-8");
                             BufferedReader bufferedReader=new BufferedReader(inputStreamReader);
@@ -638,11 +653,34 @@ public class MainActivity extends AppCompatActivity {
                                 content+=line;
                             }
                             inputStream.close();
-                            //TODO 解析pm数据文件，包括点之记信息和点位连接
-                            content.replace("[","").replace("]","");
+                            JsonObject jsonObject=new JsonParser().parse(content).getAsJsonObject();
+                            JsonArray jsonArray=new JsonParser().parse(jsonObject.get("pointList").getAsString()).getAsJsonArray();
+                            baiduMap.clear();
                             pointInfoList.clear();
-                            pointInfoList= Arrays.asList(content.split("}"));
-                            Toast.makeText(getApplicationContext(),content,Toast.LENGTH_LONG).show();
+                            connectPointsList.clear();
+                            fileName=data_return;
+                            excelFilePath=fileName.replace(".pm",".xlsx");
+                            for(int i=0;i<jsonArray.size();++i){
+                                String[] tmp=jsonArray.get(i).getAsJsonObject().get("coord_Data").getAsString()
+                                        .replace("latitude:","")
+                                        .replace("longitude:","")
+                                        .replace(" ","")
+                                        .split(",");
+                                drawPointMarker(new LatLng(Double.parseDouble(tmp[0]),Double.parseDouble(tmp[1])));
+                                pointInfoList.add(jsonArray.get(i).toString());
+                            }
+                            String[] tmp=jsonObject.get("connectPointsList").getAsString().split(";");
+                            for(int i=0;i<tmp.length;++i){
+                                String[] t=tmp[i].split(",");
+                                List<LatLng> tmpList=new ArrayList<>();
+                                tmpList.add(new LatLng(Double.parseDouble(t[0]),Double.parseDouble(t[1])));
+                                tmpList.add(new LatLng(Double.parseDouble(t[2]),Double.parseDouble(t[3])));
+                                drawPloyLine(tmpList);
+                                connectPointsList.add(tmpList);
+                            }
+                            isConnect=false;
+                            baiduMap.setOnMarkerClickListener(pointMenuMarkerClickListener);
+                            Toast.makeText(getApplicationContext(),jsonArray.get(0).getAsJsonObject().get("coord_Data").getAsString(),Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
                         SpiderMan.show(e);
@@ -671,6 +709,7 @@ public class MainActivity extends AppCompatActivity {
                 .width(5)
                 .color(Color.BLUE)
                 .points(points);
+        connectPointsList.add(points);
         return baiduMap.addOverlay(mPloyLineOptions);
     }
 
