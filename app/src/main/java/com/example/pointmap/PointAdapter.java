@@ -8,36 +8,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.gson.JsonParser;
 
 import java.util.List;
 
-import static android.app.Activity.RESULT_OK;
-
-public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
+public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder> implements View.OnClickListener {
     private Context mContext;
     private List<Point> mPointList;
-
-    static class ViewHolder extends RecyclerView.ViewHolder{
-        CardView cardView;
-        ImageView pointImage;
-        TextView pointName;
-
-        public ViewHolder(View view){
-            super(view);
-            cardView=(CardView)view;
-            pointImage=(ImageView)view.findViewById(R.id.point_image);
-            pointName=(TextView)view.findViewById(R.id.point_name);
-        }
-    }
 
     public PointAdapter(List<Point> pointList){
         mPointList=pointList;
@@ -48,7 +30,7 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
         if(mContext==null){
             mContext=parent.getContext();
         }
-        View view= LayoutInflater.from(mContext).inflate(R.layout.point_item,parent,false);
+        View view= LayoutInflater.from(mContext).inflate(R.layout.card_item,parent,false);
         final ViewHolder holder=new ViewHolder(view);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,7 +40,6 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
                 Intent intent=new Intent(view.getContext(),InfochangeActivity.class);
                 intent.putExtra("coord_Data",point.getJsonObject().toString());
                 ActivityCompat.startActivityForResult((Activity) view.getContext(),intent,2,null);
-                // TODO 点击卡片跳转至对应的点之记页面
             }
         });
         return holder;
@@ -69,10 +50,44 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
         Point point=mPointList.get(position);
         holder.pointName.setText(point.getPointName());
         Glide.with(mContext).load(point.getImageUri()).into(holder.pointImage);
+        holder.cardView.setTag(position);
+        holder.pointImage.setTag(position);
+        holder.pointName.setTag(position);
     }
 
     @Override
     public int getItemCount(){
         return mPointList.size();
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder{
+        CardView cardView;
+        ImageView pointImage;
+        TextView pointName;
+
+        public ViewHolder(View view){
+            super(view);
+            cardView=(CardView)view;
+            pointImage=(ImageView)view.findViewById(R.id.card_icon);
+            pointName=(TextView)view.findViewById(R.id.card_name);
+            cardView.setOnClickListener(PointAdapter.this);
+            pointImage.setOnClickListener(PointAdapter.this);
+            pointName.setOnClickListener(PointAdapter.this);
+        }
+    }
+
+    public interface OnItemClickListener{
+        void onItemClick(View v,int position);
+    }
+
+    private OnItemClickListener onItemClickListener;
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener){
+        this.onItemClickListener=onItemClickListener;
+    }
+
+    @Override
+    public void onClick(View view) {
+        onItemClickListener.onItemClick(view,(int)view.getTag());
     }
 }

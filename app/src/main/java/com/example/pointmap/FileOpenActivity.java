@@ -1,13 +1,13 @@
 package com.example.pointmap;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -29,14 +29,14 @@ public class FileOpenActivity extends AppCompatActivity {
         pmFilesList=Arrays.asList(intentData[1].replace("[","").replace("]","")
                 .replace(" ","").split(","));
         for(String fileName:pmFilesList){
-            fileList.add(new File(fileName,R.drawable.ic_addphoto));
+            fileList.add(new File(fileName,R.drawable.file));
         }
         RecyclerView recyclerView=(RecyclerView)findViewById(R.id.recycler_view_fileList);
-        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        FileListAdapter adapter=new FileListAdapter(fileList);
+        GridLayoutManager layoutManager=new GridLayoutManager(this,2);
+        recyclerView.setLayoutManager(layoutManager);
+        FileAdapter adapter=new FileAdapter(fileList);
         recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(new FileListAdapter.OnItemClickListener() {
+        adapter.setOnItemClickListener(new FileAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int position) {
                 Intent intent=new Intent();

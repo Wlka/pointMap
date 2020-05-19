@@ -310,10 +310,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void routePlanWithParam(){
-
-    }
-
     public void newFile(){
         final EditText editText=new EditText(MainActivity.this);
         AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this,R.style.Theme_AppCompat_DayNight_Dialog_Alert);
@@ -428,9 +424,13 @@ public class MainActivity extends AppCompatActivity {
                 pmFileList.add(pmFile.getName());
             }
         }
-        Intent intent=new Intent(getApplicationContext(),FileOpenActivity.class);
-        intent.putExtra("pmFiles",documentStorageDir.getAbsolutePath()+":"+pmFileList.toString());
-        startActivityForResult(intent,CHOOSE_OPENFILE);
+        if(pmFileList.size()!=0){
+            Intent intent=new Intent(getApplicationContext(),FileOpenActivity.class);
+            intent.putExtra("pmFiles",documentStorageDir.getAbsolutePath()+":"+pmFileList.toString());
+            startActivityForResult(intent,CHOOSE_OPENFILE);
+        }else{
+            Toast.makeText(getApplicationContext(),"当前设备无数据文件",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void exportFile(){
@@ -564,6 +564,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
+//            case R.id.markerConvert:
+//                // TODO 点位图标与文字相互转换
+//                if(overLayCount!=0){
+//                    if(item.getTitle()=="文字"){
+//                        item.setTitle("图标");
+//                    }else{
+//                        item.setTitle("文字");
+//                    }
+//                    Toast.makeText(getApplicationContext(),"test",Toast.LENGTH_SHORT);
+//                }else{
+//                    Toast.makeText(getApplicationContext(),"当前无点位",Toast.LENGTH_SHORT);
+//                }
+//                break;
             case R.id.pointConnect:
                 if(isConnect==false){
                     isConnect=true;
@@ -709,18 +722,19 @@ public class MainActivity extends AppCompatActivity {
                                 drawPointMarker(new LatLng(Double.parseDouble(tmp[0]),Double.parseDouble(tmp[1])));
                                 pointInfoList.add(jsonArray.get(i).toString());
                             }
-                            String[] tmp=jsonObject.get("connectPointsList").getAsString().split(";");
-                            for(int i=0;i<tmp.length;++i){
-                                String[] t=tmp[i].split(",");
-                                List<LatLng> tmpList=new ArrayList<>();
-                                tmpList.add(new LatLng(Double.parseDouble(t[0]),Double.parseDouble(t[1])));
-                                tmpList.add(new LatLng(Double.parseDouble(t[2]),Double.parseDouble(t[3])));
-                                drawPloyLine(tmpList);
-                                connectPointsList.add(tmpList);
+                            if(!TextUtils.isEmpty(jsonObject.get("connectPointsList").getAsString())) {
+                                String[] tmp=jsonObject.get("connectPointsList").getAsString().split(";");
+                                for (int i = 0; i < tmp.length; ++i) {
+                                    String[] t = tmp[i].split(",");
+                                    List<LatLng> tmpList = new ArrayList<>();
+                                    tmpList.add(new LatLng(Double.parseDouble(t[0]), Double.parseDouble(t[1])));
+                                    tmpList.add(new LatLng(Double.parseDouble(t[2]), Double.parseDouble(t[3])));
+                                    drawPloyLine(tmpList);
+                                    connectPointsList.add(tmpList);
+                                }
                             }
                             isConnect=false;
                             baiduMap.setOnMarkerClickListener(pointMenuMarkerClickListener);
-                            Toast.makeText(getApplicationContext(),jsonArray.get(0).getAsJsonObject().get("coord_Data").getAsString(),Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
                         SpiderMan.show(e);

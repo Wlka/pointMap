@@ -11,16 +11,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHolder> implements View.OnClickListener {
+public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> implements View.OnClickListener {
     private List<File> fileList;
 
-    public FileListAdapter(List<File> fileList){
+    public FileAdapter(List<File> fileList){
         this.fileList=fileList;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent,int viewType){
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.file_item,parent,false);
+        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.card_item,parent,false);
         final ViewHolder holder=new ViewHolder(view);
         return holder;
     }
@@ -48,11 +48,11 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         public ViewHolder(View view){
             super(view);
             fileView=view;
-            fileIcon=(ImageView)view.findViewById(R.id.file_icon);
-            fileName=(TextView) view.findViewById(R.id.file_name);
-            view.setOnClickListener(FileListAdapter.this);
-            fileName.setOnClickListener(FileListAdapter.this);
-            fileIcon.setOnClickListener(FileListAdapter.this);
+            fileIcon=(ImageView)view.findViewById(R.id.card_icon);
+            fileName=(TextView) view.findViewById(R.id.card_name);
+            view.setOnClickListener(FileAdapter.this);
+            fileName.setOnClickListener(FileAdapter.this);
+            fileIcon.setOnClickListener(FileAdapter.this);
         }
     }
 
@@ -70,19 +70,4 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     public void onClick(View view) {
         onItemClickListener.onItemClick(view,(int)view.getTag());
     }
-//    @Override
-//    public void onClick(View view){
-//        int position=(int)view.getTag();
-//        if(onItemClickListener!=null){
-//            switch (view.getId()){
-//                case R.id.recycler_view_fileList:
-//                    onItemClickListener.onItemClick(view,position);
-//                    break;
-//                default:
-//                    onItemClickListener.onItemClick(view,position);
-//                    break;
-//            }
-//        }
-//    }
-
 }
