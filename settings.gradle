@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':onsdk_all'
 rootProject.name='PointMap'

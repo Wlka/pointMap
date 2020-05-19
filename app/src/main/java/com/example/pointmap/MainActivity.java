@@ -11,6 +11,7 @@ import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -58,6 +59,15 @@ import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.navi.BaiduMapNavigation;
+import com.baidu.mapapi.navi.NaviParaOption;
+import com.baidu.mapapi.utils.route.BaiduMapRoutePlan;
+import com.baidu.mapapi.utils.route.RouteParaOption;
+import com.baidu.mapapi.walknavi.WalkNavigateHelper;
+import com.baidu.mapapi.walknavi.adapter.IWEngineInitListener;
+import com.baidu.mapapi.walknavi.adapter.IWRoutePlanListener;
+import com.baidu.mapapi.walknavi.model.WalkRoutePlanError;
+import com.baidu.mapapi.walknavi.params.WalkNaviLaunchParam;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.JsonArray;
@@ -158,8 +168,35 @@ public class MainActivity extends AppCompatActivity {
                 textView_navigation.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //TODO navigate to the point
-                        Toast.makeText(getApplicationContext(),"test",Toast.LENGTH_SHORT).show();
+                        final WalkNaviLaunchParam param=new WalkNaviLaunchParam().stPt(currentLocation).endPt(marker.getPosition());
+                        WalkNavigateHelper.getInstance().initNaviEngine(MainActivity.this, new IWEngineInitListener() {
+                            @Override
+                            public void engineInitSuccess() {
+                                WalkNavigateHelper.getInstance().routePlanWithParams(param, new IWRoutePlanListener() {
+                                    @Override
+                                    public void onRoutePlanStart() {
+                                    }
+
+                                    @Override
+                                    public void onRoutePlanSuccess() {
+                                        Toast.makeText(getApplicationContext(),"算路成功，正在跳转",Toast.LENGTH_SHORT).show();
+                                        Intent intent=new Intent(getApplicationContext(),WNaviGuideActivity.class);
+                                        startActivity(intent);
+                                    }
+
+                                    @Override
+                                    public void onRoutePlanFail(WalkRoutePlanError walkRoutePlanError) {
+                                        Toast.makeText(getApplicationContext(),"算路失败",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                Toast.makeText(getApplicationContext(),"导航引擎初始化成功",Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void engineInitFail() {
+                                Toast.makeText(getApplicationContext(),"导航引擎初始化失败",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 });
                 textView_infoChange.setOnClickListener(new View.OnClickListener() {
@@ -273,6 +310,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void routePlanWithParam(){
+
+    }
+
     public void newFile(){
         final EditText editText=new EditText(MainActivity.this);
         AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this,R.style.Theme_AppCompat_DayNight_Dialog_Alert);
@@ -371,7 +412,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openFile(){
-        //TODO 打开文件列表让用户选择打开指定文件
         File documentStorageDir = new File(Environment.getExternalStoragePublicDirectory("").getAbsoluteFile() + "/PointMap",
                 "Documents");
         if (!documentStorageDir.exists()) {
@@ -445,11 +485,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void export2Excel(){
-        //TODO 导出到excel
         if(pointInfoList.size()==0){
             Toast.makeText(getApplicationContext(),"没有填写任何信息，无法导出excel文件",Toast.LENGTH_SHORT).show();
             return;
         }
+        //TODO 导出excel样式修改
         ExcelUtils excelUtils=new ExcelUtils(getContentResolver(),excelFilePath);
         for(int i=0;i<pointInfoList.size();++i){
             JsonObject jsonObject=new JsonParser().parse(pointInfoList.get(i)).getAsJsonObject();
@@ -816,10 +856,14 @@ public class MainActivity extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE)
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            permissionList.add(Manifest.permission.READ_PHONE_STATE);
+            permissionList.add(Manifest.permission.CAMERA);
         }
+//        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            permissionList.add(Manifest.permission.READ_PHONE_STATE);
+//        }
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);

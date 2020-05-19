@@ -58,7 +58,7 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
                 Intent intent=new Intent(view.getContext(),InfochangeActivity.class);
                 intent.putExtra("coord_Data",point.getJsonObject().toString());
                 ActivityCompat.startActivityForResult((Activity) view.getContext(),intent,2,null);
-                //TODO
+                // TODO 点击卡片跳转至对应的点之记页面
             }
         });
         return holder;
