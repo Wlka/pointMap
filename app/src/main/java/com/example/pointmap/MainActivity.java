@@ -302,6 +302,13 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"当前数据为空",Toast.LENGTH_SHORT).show();
                         }
                         break;
+                    case R.id.nav_about:
+                        AlertDialog.Builder dialog=new AlertDialog.Builder(MainActivity.this,R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+                        dialog.setTitle("关于 & 反馈");
+                        dialog.setMessage("软件如在使用过程发现任何问题或者需要完善那些内容，可以将错误截图或修改意见发送至邮箱：1464101258@qq.com");
+                        dialog.setPositiveButton("确定",null);
+                        dialog.show();
+                        break;
                     default:
                         break;
                 }
@@ -696,7 +703,8 @@ public class MainActivity extends AppCompatActivity {
                     File pmFile=new File(data_return);
                     try {
                         InputStream inputStream = new FileInputStream(pmFile);
-
+                        fileName=pmFile.getAbsolutePath();
+                        excelFilePath=fileName.replace(".pm",".xlsx");
                         if(inputStream!=null){
                             InputStreamReader inputStreamReader=new InputStreamReader(inputStream,"UTF-8");
                             BufferedReader bufferedReader=new BufferedReader(inputStreamReader);
@@ -713,6 +721,7 @@ public class MainActivity extends AppCompatActivity {
                             connectPointsList.clear();
                             fileName=data_return;
                             excelFilePath=fileName.replace(".pm",".xlsx");
+                            overLayCount=0;
                             for(int i=0;i<jsonArray.size();++i){
                                 String[] tmp=jsonArray.get(i).getAsJsonObject().get("coord_Data").getAsString()
                                         .replace("latitude:","")
@@ -720,6 +729,7 @@ public class MainActivity extends AppCompatActivity {
                                         .replace(" ","")
                                         .split(",");
                                 drawPointMarker(new LatLng(Double.parseDouble(tmp[0]),Double.parseDouble(tmp[1])));
+                                overLayCount++;
                                 pointInfoList.add(jsonArray.get(i).toString());
                             }
                             if(!TextUtils.isEmpty(jsonObject.get("connectPointsList").getAsString())) {
